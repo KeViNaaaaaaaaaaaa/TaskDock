@@ -1,0 +1,189 @@
+[
+  {
+    "id": 1,
+    "username": "jdoe",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "jdoe@example.com",
+    "password_hash": "hashed_password_1",
+    "role": "admin",
+    "avatar_url": "https://example.com/avatars/jdoe.png",
+    "current_projects": [
+      {
+        "project_id": 101,
+        "role": "developer",
+        "status": "Active"
+      }
+    ],
+    "history_projects": [
+      {
+        "project_id": 99,
+        "role": "tester",
+        "status": "Archived"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "username": "asmith",
+    "first_name": "Alice",
+    "last_name": "Smith",
+    "email": "asmith@example.com",
+    "password_hash": "hashed_password_2",
+    "role": "user",
+    "avatar_url": "https://example.com/avatars/asmith.png",
+    "current_projects": [],
+    "history_projects": [
+      {
+        "project_id": 97,
+        "role": "developer",
+        "status": "Archived"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "username": "bwhite",
+    "first_name": "Bob",
+    "last_name": "White",
+    "email": "bwhite@example.com",
+    "password_hash": "hashed_password_3",
+    "role": "manager",
+    "avatar_url": "https://example.com/avatars/bwhite.png",
+    "current_projects": [
+      {
+        "project_id": 104,
+        "role": "manager",
+        "status": "Active"
+      }
+    ],
+    "history_projects": []
+  },
+  {
+    "id": 4,
+    "username": "mjordan",
+    "first_name": "Michael",
+    "last_name": "Jordan",
+    "email": "mjordan@example.com",
+    "password_hash": "hashed_password_4",
+    "role": "user",
+    "avatar_url": "https://example.com/avatars/mjordan.png",
+    "current_projects": [
+      {
+        "project_id": 106,
+        "role": "developer",
+        "status": "Active"
+      }
+    ],
+    "history_projects": []
+  },
+  {
+    "id": 5,
+    "username": "lsmith",
+    "first_name": "Linda",
+    "last_name": "Smith",
+    "email": "lsmith@example.com",
+    "password_hash": "hashed_password_5",
+    "role": "admin",
+    "avatar_url": "https://example.com/avatars/lsmith.png",
+    "current_projects": [
+      {
+        "project_id": 107,
+        "role": "tester",
+        "status": "Active"
+      }
+    ],
+    "history_projects": []
+  },
+  {
+    "id": 6,
+    "username": "dclark",
+    "first_name": "David",
+    "last_name": "Clark",
+    "email": "dclark@example.com",
+    "password_hash": "hashed_password_6",
+    "role": "user",
+    "avatar_url": "https://example.com/avatars/dclark.png",
+    "current_projects": [
+      {
+        "project_id": 108,
+        "role": "developer",
+        "status": "Active"
+      }
+    ],
+    "history_projects": []
+  },
+  {
+    "id": 7,
+    "username": "kjones",
+    "first_name": "Karen",
+    "last_name": "Jones",
+    "email": "kjones@example.com",
+    "password_hash": "hashed_password_7",
+    "role": "manager",
+    "avatar_url": "https://example.com/avatars/kjones.png",
+    "current_projects": [],
+    "history_projects": [
+      {
+        "project_id": 95,
+        "role": "tester",
+        "status": "Archived"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "username": "pjohnson",
+    "first_name": "Paul",
+    "last_name": "Johnson",
+    "email": "pjohnson@example.com",
+    "password_hash": "hashed_password_8",
+    "role": "user",
+    "avatar_url": "https://example.com/avatars/pjohnson.png",
+    "current_projects": [],
+    "history_projects": []
+  },
+  {
+    "id": 9,
+    "username": "slee",
+    "first_name": "Sam",
+    "last_name": "Lee",
+    "email": "slee@example.com",
+    "password_hash": "hashed_password_9",
+    "role": "developer",
+    "avatar_url": "https://example.com/avatars/slee.png",
+    "current_projects": [
+      {
+        "project_id": 109,
+        "role": "developer",
+        "status": "Active"
+      }
+    ],
+    "history_projects": [
+      {
+        "project_id": 96,
+        "role": "tester",
+        "status": "Archived"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "username": "tadams",
+    "first_name": "Tom",
+    "last_name": "Adams",
+    "email": "tadams@example.com",
+    "password_hash": "hashed_password_10",
+    "role": "manager",
+    "avatar_url": "https://example.com/avatars/tadams.png",
+    "current_projects": [
+      {
+        "project_id": 110,
+        "role": "manager",
+        "status": "Active"
+      }
+    ],
+    "history_projects": []
+  }
+]
+
