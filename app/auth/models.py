@@ -13,6 +13,7 @@ class Role(Base):
 
 class User(Base):
     phone_number: Mapped[str_uniq]
+    nickname: Mapped[str_uniq]
     first_name: Mapped[str]
     last_name: Mapped[str]
     email: Mapped[str_uniq]

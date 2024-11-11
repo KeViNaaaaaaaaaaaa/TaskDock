@@ -9,6 +9,11 @@ class EmailModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class NumModel(BaseModel):
+    phone_number: str = Field(description="Номер телефона")
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserBase(EmailModel):
     phone_number: str = Field(description="Номер телефона в международном формате, начинающийся с '+'")
     first_name: str = Field(min_length=3, max_length=50, description="Имя, от 3 до 50 символов")

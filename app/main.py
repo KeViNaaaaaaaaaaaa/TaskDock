@@ -1,12 +1,14 @@
-from fastapi import Query
-from utils import json_to_dict_list
-import os
-from enum import Enum
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
+# from fastapi import Query
+# from utils import json_to_dict_list
+# import os
+# from enum import Enum
+# from pydantic import BaseModel, EmailStr, Field
+# from typing import Optional, List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.auth.router import router as router_auth
+from app.projects.router import router as router_projects
+
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
@@ -143,3 +145,4 @@ def home_page():
 
 
 app.include_router(router_auth)
+app.include_router(router_projects)
