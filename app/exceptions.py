@@ -6,6 +6,9 @@ UserAlreadyExistsExceptionEm = HTTPException(status_code=status.HTTP_409_CONFLIC
 UserAlreadyExistsExceptionTel = HTTPException(status_code=status.HTTP_409_CONFLICT,
                                               detail='Пользователь с таким номером уже существует')
 
+UserAlreadyExistsExceptionNick = HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                              detail='Пользователь с таким ником уже существует')
+
 IncorrectEmailOrPasswordException = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                                   detail='Неверная почта или пароль')
 

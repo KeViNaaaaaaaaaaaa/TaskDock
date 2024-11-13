@@ -14,8 +14,14 @@ class NumModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class NickModel(BaseModel):
+    nickname: str = Field(description="Ник")
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserBase(EmailModel):
     phone_number: str = Field(description="Номер телефона в международном формате, начинающийся с '+'")
+    nickname: str = Field(min_length=5, max_length=50, description="Ник, от 5 до 50 символов")
     first_name: str = Field(min_length=3, max_length=50, description="Имя, от 3 до 50 символов")
     last_name: str = Field(min_length=3, max_length=50, description="Фамилия, от 3 до 50 символов")
 

@@ -10,6 +10,7 @@ from app.auth.router import router as router_auth
 from app.projects.router import router as router_projects
 
 from fastapi.staticfiles import StaticFiles
+from app.dao.database import init_db
 
 app = FastAPI()
 
@@ -24,6 +25,9 @@ app.add_middleware(
 
 app.mount('/static', StaticFiles(directory='app/static'), name='static')
 
+@app.on_event("startup")
+async def on_startup():
+    await init_db()
 
 @app.get("/")
 def home_page():
