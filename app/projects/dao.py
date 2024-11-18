@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from fastapi import HTTPException, status
 
 from app.dao.database import engine
-from app.projects.models import Project
+from app.projects.models import Project, ProjectMembership
 
 # Создаем сессию для работы с базой данных
 SessionLocal = sessionmaker(
@@ -46,6 +46,19 @@ class ProjectsDAO:
             )
         return project
 
+    # @staticmethod
+    # async def get_projects(session: AsyncSession, project_id: int) -> Project:
+    #     # Получение проекта по ID
+    #     result = await session.execute(select(Project).where(Project.id == project_id))
+    #     projects = result.scalars().all()
+    #
+    #     if not projects:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_404_NOT_FOUND,
+    #             detail="Project not found"
+    #         )
+    #     return projects
+
     @staticmethod
     async def delete_project(session: AsyncSession, project_id: int) -> Project:
         # Удаление проекта
@@ -62,3 +75,16 @@ class ProjectsDAO:
         await session.commit()
         return project
 
+    # @staticmethod
+    # async def get_user_projects(session: AsyncSession, user_id: int) -> Project:
+    #     # Поиск всех проектов, где пользователь является участником
+    #     result = await session.execute(select(Project).join(ProjectMembership).filter(ProjectMembership.user_id == user_id))
+    #     projects = result.scalars().all()
+    #
+    #     if not projects:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_404_NOT_FOUND,
+    #             detail="Project not found"
+    #         )
+    #
+    #     return projects

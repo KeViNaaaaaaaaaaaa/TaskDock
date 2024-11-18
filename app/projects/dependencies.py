@@ -1,8 +1,13 @@
+from typing import List
+
 from fastapi import Depends, HTTPException, status
 from app.auth.dependencies import get_current_user
+from app.auth.models import User
 from app.projects.dao import ProjectsDAO
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.dao.session_maker import SessionDep
+from app.projects.models import Project
+from app.projects.schemas import ProjectMembershipBase, ProjectRead
 
 
 # Зависимость для получения владельца проекта
@@ -21,10 +26,44 @@ async def get_project_owner(
             detail="Project not found"
         )
 
-    if project.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
+    # if project.owner_id != current_user.id:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_403_FORBIDDEN,
+    #         detail="Not enough permissions"
+    #     )
 
     return project
+
+
+# async def get_user_projects(
+#         current_user: User = Depends(get_current_user),
+#         session: AsyncSession = Depends(SessionDep)
+# ) -> Project:
+#     # Получаем все проекты, в которых участвует пользователь
+#     projects = await ProjectsDAO.get_user_projects(session, current_user.id)
+#
+#     if not projects:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
+#
+#     return projects
+
+    # Возвращаем список проектов, превращая их в ProjectRead
+    # return [
+    #     ProjectRead(
+    #         id=project.id,
+    #         title=project.title,
+    #         description=project.description,
+    #         created_at=project.created_at,
+    #         updated_at=project.updated_at,
+    #         status=project.status or "ACTIVE",  # Статус по умолчанию
+    #         members=[
+    #             ProjectMembershipBase(
+    #                 nickname=member.nickname,
+    #                 first_name=member.first_name,
+    #                 last_name=member.last_name
+    #             )
+    #             for member in project.members
+    #         ]
+    #     )
+    #     for project in projects
+    # ]

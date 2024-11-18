@@ -1,11 +1,15 @@
 from datetime import datetime
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from app.auth.models import User
-from app.projects.models import Project, ProjectMembership, ProjectRole
+from app.dao.session_maker import SessionDep
+from app.projects.models import Project, ProjectMembership, ProjectRole, Task
 from app.projects.dependencies import get_current_user
-from app.projects.dao import get_db
-from app.projects.schemas import ProjectCreate
+from app.projects.dao import get_db, ProjectsDAO
+from app.projects.schemas import ProjectCreate, ProjectRead, ProjectDelete, TaskCreate
 from sqlalchemy.future import select
 
 router = APIRouter()
@@ -36,6 +40,58 @@ async def create_project(
     await db.commit()
 
     return {"message": "Проект успешно создан", "project_id": new_project.id}
+
+
+@router.delete("/projects/delete")
+async def delete_project(
+        project_id: int,
+        project_title: str,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    res = await db.execute(select(Project).filter(Project.id == project_id))
+    project = res.scalars().first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+    res = await db.execute(select(ProjectMembership).filter_by(
+        project_id=project_id, user_id=current_user.id, role=ProjectRole.CREATOR
+    ))
+    cheto3 = res.scalars().first()
+    if not cheto3:
+        raise HTTPException(status_code=403, detail="Только создатель проекта может удалять участников")
+    res = await db.execute(select(ProjectMembership).filter_by(
+        project_id=project_id
+    ))
+    cheto4 = res.scalars().first()
+    await db.delete(cheto4)
+    await db.delete(project)
+    await db.commit()
+    return {"message": "Участник удален успешно"}
+
+    # new_project = Project(
+    #     title=project.title,
+    #     description=project.description,
+    #     created_at=datetime.utcnow(),
+    #     updated_at=datetime.utcnow(),
+    # )
+    # db.delete(new_project)
+    # await db.commit()
+    # await db.refresh(new_project)
+    #
+    # membership = ProjectMembership(
+    #     project_id=new_project.id,
+    #     user_id=current_user.id,
+    #     role=ProjectRole.CREATOR
+    # )
+    # db.delete(membership)
+    # await db.commit()
+    #
+    # return {"message": "Проект успешно удален", "project_id": new_project.id}
+
+
+# @router.get("/projectss/", response_model=None)
+# async def get_me(project: Depends(get_user_projects)):
+#     return ProjectRead.model_validate(project)
 
 
 @router.post("/projects/{project_id}/members")
@@ -83,7 +139,7 @@ async def remove_member(
     if not project:
         raise HTTPException(status_code=404, detail="Проект не найден")
     res = await db.execute(select(ProjectMembership).filter_by(
-            project_id=project_id, user_id=current_user.id, role=ProjectRole.CREATOR
+        project_id=project_id, user_id=current_user.id, role=ProjectRole.CREATOR
     ))
     cheto3 = res.scalars().first()
     if not cheto3:
@@ -99,6 +155,31 @@ async def remove_member(
     if not membership:
         raise HTTPException(status_code=404, detail="Участник не найден")
 
-    db.delete(membership)
+    await db.delete(membership)
     await db.commit()
     return {"message": "Участник удален успешно"}
+
+
+@router.post("/projects/{project_id}/tasks")
+async def create_project(
+        task: TaskCreate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    new_task = Task(
+        title=task.title,
+        description=task.description,
+        project_id=task.project_id,
+        assignee_id=task.assignee_id,
+        status=task.status,
+        priority=task.priority,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
+        due_data=task.due_date,
+        tester_id=task.tester_id,
+    )
+    db.add(task)
+    await db.commit()
+    await db.refresh(task)
+
+    return {"message": "Проект успешно создан", "project_id": new_task.project_id}

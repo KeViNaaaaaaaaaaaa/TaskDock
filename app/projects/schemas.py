@@ -21,6 +21,12 @@ class ProjectBase(BaseModel):
     description: Optional[str] = None
 
 
+class ProjectDelete(BaseModel):
+    id: int
+    title: str
+    pass
+
+
 class ProjectCreate(ProjectBase):
     pass
 
@@ -34,10 +40,11 @@ class ProjectRead(ProjectBase):
     created_at: datetime
     updated_at: Optional[datetime]
     status: str
-    members: List[ProjectMembershipBase]  # Список участников с минимальными данными
+    members: List[ProjectMembershipBase]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
 
 class TaskBase(BaseModel):
     title: str
@@ -67,4 +74,4 @@ class TaskRead(TaskBase):
     tester_id: Optional[int]  # Ответственный за тестирование
 
     class Config:
-        orm_mode = True
+        from_attributes = True
