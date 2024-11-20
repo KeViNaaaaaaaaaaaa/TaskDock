@@ -37,10 +37,12 @@ class ProjectUpdate(ProjectBase):
 
 class ProjectRead(ProjectBase):
     id: int
+    # owner: str
     created_at: datetime
     updated_at: Optional[datetime]
     status: str
-    members: List[ProjectMembershipBase]
+    members: List[str]
+    tasks: List[str]
 
     class Config:
         from_attributes = True
@@ -51,7 +53,7 @@ class TaskBase(BaseModel):
     description: Optional[str] = None
     status: str
     priority: str
-    due_date: Optional[datetime] = None
+    tester_id: int
 
 
 class TaskCreate(TaskBase):

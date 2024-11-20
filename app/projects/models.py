@@ -68,15 +68,15 @@ class Task(Base):
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     project_id: Mapped[int] = mapped_column(Integer, ForeignKey('projects.id'), nullable=False)
-    assignee_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
+    assignee_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('project_memberships.user_id'), nullable=True)
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.Grooming)
     priority: Mapped[TaskPriority] = mapped_column(Enum(TaskPriority), default=TaskPriority.Medium)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    due_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    # due_date: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     tester_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
 
     project: Mapped["Project"] = relationship("Project", back_populates="tasks")
 
     def __repr__(self):
-        return f"Task(id={self.id}, title={self.title}, status={self.status})"
+        return f"{self.__class__.__name__}(id={self.id})"

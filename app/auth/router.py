@@ -53,6 +53,7 @@ async def logout_user(response: Response):
 
 @router.get("/me/")
 async def get_me(user_data: User = Depends(get_current_user)) -> SUserInfo:
+    print(user_data)
     return SUserInfo.model_validate(user_data)
 
 

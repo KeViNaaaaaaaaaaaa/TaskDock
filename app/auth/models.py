@@ -22,4 +22,4 @@ class User(Base):
     role: Mapped["Role"] = relationship("Role", back_populates="users", lazy="joined")
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(id={self.id})"
+        return f"{self.__class__.__name__}(id={self.id}, nickname={self.nickname}, first_name{self.first_name}, last_name{self.last_name})"

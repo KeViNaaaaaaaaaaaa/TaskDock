@@ -14,7 +14,7 @@ from app.projects.schemas import ProjectMembershipBase, ProjectRead
 async def get_project_owner(
         project_id: int,
         current_user=Depends(get_current_user),
-        session: AsyncSession = Depends(SessionDep)  # Используем Depends для асинхронной сессии
+        session: AsyncSession = SessionDep  # Используем Depends для асинхронной сессии
 ):
     # Получаем проект из базы данных
     project = await ProjectsDAO.get_project(session, project_id)
@@ -26,28 +26,31 @@ async def get_project_owner(
             detail="Project not found"
         )
 
-    # if project.owner_id != current_user.id:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_403_FORBIDDEN,
-    #         detail="Not enough permissions"
-    #     )
+    user_id = await ProjectsDAO.get_project_owner(session, project_id)
 
-    return project
+    if user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Вы не владелец проекта"
+        )
+
+    return user_id
 
 
-# async def get_user_projects(
-#         current_user: User = Depends(get_current_user),
-#         session: AsyncSession = Depends(SessionDep)
-# ) -> Project:
-#     # Получаем все проекты, в которых участвует пользователь
-#     projects = await ProjectsDAO.get_user_projects(session, current_user.id)
-#
-#     if not projects:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
-#
-#     return projects
+async def get_user_projects(
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = SessionDep
+) -> Project:
+    # Получаем все проекты, в которых участвует пользователь
+    projects = await ProjectsDAO.get_user_projects(session, current_user.id)
 
-    # Возвращаем список проектов, превращая их в ProjectRead
+    if not projects:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
+
+
+
+    return projects
+
     # return [
     #     ProjectRead(
     #         id=project.id,
@@ -67,3 +70,28 @@ async def get_project_owner(
     #     )
     #     for project in projects
     # ]
+async def get_users_projects(
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = SessionDep
+) -> User:
+
+    projects_members = await ProjectsDAO.get_users_projects(session, current_user.id)
+
+    if not projects_members:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
+
+
+    return projects_members
+
+async def get_project_tasks(
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = SessionDep
+) -> User:
+
+    projects_members = await ProjectsDAO.get_project_tasks(session, current_user.id)
+
+    if not projects_members:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
+
+
+    return projects_members
