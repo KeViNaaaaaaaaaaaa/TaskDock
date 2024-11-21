@@ -174,3 +174,34 @@ class ProjectsDAO:
             r.append(projects_members)
         print(r)
         return r
+
+    @staticmethod
+    async def get_users_owner(session: AsyncSession, user_id: int) -> List[Project]:
+        # Получение всех проектов, где пользователь является участником
+        result = await session.execute(
+            select(Project).join(ProjectMembership).filter(ProjectMembership.user_id == user_id)
+        )
+        projects = result.scalars().all()
+
+        # Проверка, если проектов нет
+        if not projects:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Projects not found"
+            )
+        r = []
+        print(len(projects))
+        for project in projects:
+            result_members = await session.execute(
+                select(User.nickname).join(ProjectMembership).filter(
+                    and_(
+                        and_(
+                            ProjectMembership.project_id == project.id,
+                            ProjectMembership.role == 'CREATOR'
+                        ),
+                        User.id == ProjectMembership.user_id)
+                ))
+            projects_members = result_members.scalars().all()
+            r.append(projects_members)
+        print(r)
+        return r

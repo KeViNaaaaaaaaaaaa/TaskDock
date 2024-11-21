@@ -1,4 +1,5 @@
 from datetime import datetime
+from operator import itemgetter
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -8,7 +9,7 @@ from app.auth.models import User
 from app.dao.session_maker import SessionDep
 from app.projects.models import Project, ProjectMembership, ProjectRole, Task
 from app.projects.dependencies import get_current_user, get_project_owner, get_user_projects, get_users_projects, \
-    get_project_tasks
+    get_project_tasks, get_users_owner
 from app.projects.dao import get_db, ProjectsDAO
 from app.projects.schemas import ProjectCreate, ProjectRead, ProjectDelete, TaskCreate, ProjectMembershipBase
 from sqlalchemy.future import select
@@ -43,7 +44,7 @@ async def create_project(
     return {"message": "Проект успешно создан", "project_id": new_project.id}
 
 
-@router.delete("/projects/delete")
+@router.delete("/projects/delete/")
 async def delete_project(
         project_id: int,
         project_title: str,
@@ -59,7 +60,7 @@ async def delete_project(
     ))
     cheto3 = res.scalars().first()
     if not cheto3:
-        raise HTTPException(status_code=403, detail="Только создатель проекта может го удалить")
+        raise HTTPException(status_code=403, detail="Только создатель проекта может его удалить")
     res = await db.execute(select(ProjectMembership).filter_by(
         project_id=project_id
     ))
@@ -75,37 +76,16 @@ async def delete_project(
     await db.commit()
     return {"message": "Проект удален успешно"}
 
-    # new_project = Project(
-    #     title=project.title,
-    #     description=project.description,
-    #     created_at=datetime.utcnow(),
-    #     updated_at=datetime.utcnow(),
-    # )
-    # db.delete(new_project)
-    # await db.commit()
-    # await db.refresh(new_project)
-    #
-    # membership = ProjectMembership(
-    #     project_id=new_project.id,
-    #     user_id=current_user.id,
-    #     role=ProjectRole.CREATOR
-    # )
-    # db.delete(membership)
-    # await db.commit()
-    #
-    # return {"message": "Проект успешно удален", "project_id": new_project.id}
-
 
 @router.get("/projectss/")
 async def get_me(projects: List[Project] = Depends(get_user_projects),
                  members: List[List[User]] = Depends(get_users_projects),
-                 tasks: List[List[Task]] = Depends(get_project_tasks)):
-
-
-    return [
+                 tasks: List[List[Task]] = Depends(get_project_tasks),
+                 owner: List[List[User]] = Depends(get_users_owner)):
+    a = [
         ProjectRead(
             id=project.id,
-            # owner=,
+            owner=[own for own in owner[projects.index(project)]][0],
             title=project.title,
             description=project.description,
             created_at=project.created_at,
@@ -123,6 +103,8 @@ async def get_me(projects: List[Project] = Depends(get_user_projects),
         for project in projects
 
     ]
+
+    return a
 
 
 @router.post("/projects/{project_id}/members")
@@ -195,7 +177,7 @@ async def remove_member(
 async def create_tasks(
         task: TaskCreate,
         project_id: int,
-        # due_date: int,
+        due_date: int,
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user),
         current_project_user: Task = Depends(get_project_owner),
@@ -210,7 +192,7 @@ async def create_tasks(
         tester_id=task.tester_id,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
-        # due_data=due_date,
+        due_data=due_date,
     )
     if current_user.id != current_project_user:
         raise HTTPException(status_code=403, detail="Только создатель проекта может добавлять задачи")

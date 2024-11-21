@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -37,7 +37,7 @@ class ProjectUpdate(ProjectBase):
 
 class ProjectRead(ProjectBase):
     id: int
-    # owner: str
+    owner: str
     created_at: datetime
     updated_at: Optional[datetime]
     status: str
@@ -54,6 +54,10 @@ class TaskBase(BaseModel):
     status: str
     priority: str
     tester_id: int
+    due_data: (datetime.now() + timedelta(10)).strftime("%d/%m/%y %I:%M")
+
+    class Config:
+        arbitrary_types_allowed = False
 
 
 class TaskCreate(TaskBase):
