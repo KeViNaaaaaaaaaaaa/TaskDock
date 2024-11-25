@@ -1,6 +1,9 @@
+from typing import Optional
+
 from sqlalchemy import text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.dao.database import Base, str_uniq
+from PIL import Image
 
 
 class Role(Base):
@@ -13,6 +16,7 @@ class Role(Base):
 
 class User(Base):
     phone_number: Mapped[str_uniq]
+    # photo_profile: Mapped[str]
     nickname: Mapped[str_uniq]
     first_name: Mapped[str]
     last_name: Mapped[str]

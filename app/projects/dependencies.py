@@ -47,7 +47,19 @@ async def get_user_projects(
     if not projects:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
 
+    return projects
 
+
+async def get_project(
+        project_id: int,
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = SessionDep
+) -> Project:
+    # Получаем все проекты, в которых участвует пользователь
+    projects = await ProjectsDAO.get_project(session, project_id)
+
+    if not projects:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
 
     return projects
 
@@ -70,41 +82,52 @@ async def get_user_projects(
     #     )
     #     for project in projects
     # ]
+
+
 async def get_users_projects(
         current_user: User = Depends(get_current_user),
         session: AsyncSession = SessionDep
 ) -> User:
-
     projects_members = await ProjectsDAO.get_users_projects(session, current_user.id)
 
     if not projects_members:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
 
-
     return projects_members
+
 
 async def get_users_owner(
         current_user: User = Depends(get_current_user),
         session: AsyncSession = SessionDep
 ) -> User:
-
     projects_members = await ProjectsDAO.get_users_owner(session, current_user.id)
 
     if not projects_members:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
 
+    return projects_members
+
+
+async def get_projects_tasks(
+        user_id: int,
+        current_user: User = Depends(get_current_user),
+        session: AsyncSession = SessionDep,
+) -> User:
+    projects_members = await ProjectsDAO.get_projects_tasks(session, user_id)
+
+    if not projects_members:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
 
     return projects_members
+
 
 async def get_project_tasks(
         current_user: User = Depends(get_current_user),
         session: AsyncSession = SessionDep
 ) -> User:
-
     projects_members = await ProjectsDAO.get_project_tasks(session, current_user.id)
 
     if not projects_members:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No projects found for the user")
-
 
     return projects_members

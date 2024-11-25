@@ -9,9 +9,10 @@ from app.auth.models import User
 from app.dao.session_maker import SessionDep
 from app.projects.models import Project, ProjectMembership, ProjectRole, Task
 from app.projects.dependencies import get_current_user, get_project_owner, get_user_projects, get_users_projects, \
-    get_project_tasks, get_users_owner
+    get_projects_tasks, get_users_owner, get_project, get_project_tasks
 from app.projects.dao import get_db, ProjectsDAO
-from app.projects.schemas import ProjectCreate, ProjectRead, ProjectDelete, TaskCreate, ProjectMembershipBase
+from app.projects.schemas import ProjectCreate, ProjectRead, ProjectDelete, TaskCreate, ProjectMembershipBase, \
+    ProjectUpdate, TaskUpdate, TaskRead
 from sqlalchemy.future import select
 
 router = APIRouter()
@@ -44,6 +45,47 @@ async def create_project(
     return {"message": "Проект успешно создан", "project_id": new_project.id}
 
 
+@router.put("/projects/update")
+async def update_project(
+        project_id: int,
+        project: ProjectUpdate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    res = await db.execute(select(Project).filter_by(id=project_id))
+    current_project = res.scalars().first()
+    if not current_project:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+
+    update_dict = project.model_dump(exclude_unset=True)
+    for key, value in update_dict.items():
+        setattr(current_project, key, value)
+
+    db.add(current_project)
+    await db.commit()
+    await db.refresh(current_project)
+
+    return {"message": "Проект успешно обновлен", "project_id": project_id}
+
+
+# @router.put("/projects/update")
+# async def update_project(
+#         project_id: int,
+#         project: ProjectUpdate,
+#         db: Session = Depends(get_db),
+#         project_info: List[Project] = Depends(get_project),
+#         current_user: User = Depends(get_current_user),
+# ):
+#     current_project = await db.get(Project, project_id)
+#     update_dict = project.model_dump(exclude_unset=True)
+#     current_project.sqlmodel_update(update_dict)
+#     db.add(current_project)
+#     await db.commit()
+#     await db.refresh(current_project)
+#
+#     return {"message": "Проект успешно обновлен", "project_id": project_id}
+
+
 @router.delete("/projects/delete/")
 async def delete_project(
         project_id: int,
@@ -56,7 +98,7 @@ async def delete_project(
     if not project:
         raise HTTPException(status_code=404, detail="Проект не найден")
     res = await db.execute(select(ProjectMembership).filter_by(
-        project_id=project_id, user_id=current_user.id, role=ProjectMembership.role == 'CREATOR'
+        project_id=project_id, user_id=current_user.id, role='CREATOR'
     ))
     cheto3 = res.scalars().first()
     if not cheto3:
@@ -64,14 +106,24 @@ async def delete_project(
     res = await db.execute(select(ProjectMembership).filter_by(
         project_id=project_id
     ))
-    cheto4 = res.scalars().first()
+    cheto4 = res.scalars().all()
+    if cheto4:
+        await db.delete(cheto4)
     res = await db.execute(select(Task).filter_by(
         project_id=project_id
     ))
-    cheto5 = res.scalars().first()
+    cheto5 = res.scalars().all()
+    if cheto5:
+        await db.delete(cheto5)
+        await db.commit()
 
-    await db.delete(cheto5)
-    await db.delete(cheto4)
+    # res = await db.execute(select(User).filter_by(
+    #     role_id=1
+    # ))
+    # cheto6 = res.scalars().all()
+    # if cheto5:
+    #     await db.delete(cheto6)
+
     await db.delete(project)
     await db.commit()
     return {"message": "Проект удален успешно"}
@@ -80,7 +132,7 @@ async def delete_project(
 @router.get("/projectss/")
 async def get_me(projects: List[Project] = Depends(get_user_projects),
                  members: List[List[User]] = Depends(get_users_projects),
-                 tasks: List[List[Task]] = Depends(get_project_tasks),
+                 tasks: List[List[Task]] = Depends(get_projects_tasks),
                  owner: List[List[User]] = Depends(get_users_owner)):
     a = [
         ProjectRead(
@@ -177,7 +229,6 @@ async def remove_member(
 async def create_tasks(
         task: TaskCreate,
         project_id: int,
-        due_date: int,
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user),
         current_project_user: Task = Depends(get_project_owner),
@@ -192,7 +243,7 @@ async def create_tasks(
         tester_id=task.tester_id,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
-        due_data=due_date,
+        # due_data=due_date,
     )
     if current_user.id != current_project_user:
         raise HTTPException(status_code=403, detail="Только создатель проекта может добавлять задачи")
@@ -202,7 +253,7 @@ async def create_tasks(
     await db.commit()
     await db.refresh(new_task)
 
-    return {"message": "Проект успешно создан", "project_id": new_task.project_id}
+    return {"message": "Задача успешно создана", "project_id": new_task.project_id}
 
 
 @router.delete("/projects/{project_id}/tasks")
@@ -225,3 +276,77 @@ async def delete_tasks(
     await db.commit()
 
     return {"message": "Проект успешно удален", "project_id": project_id}
+
+
+@router.put("/projects/{project_id}/tasks")
+async def update_project(
+        title: str,
+        project_id: int,
+        task: TaskUpdate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+        projects: List[Project] = Depends(get_user_projects),
+):
+    res = await db.execute(select(Task).filter_by(project_id=project_id, title=title))
+    membership = res.scalars().first()
+    print(membership)
+    if not membership:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+
+    update_dict = task.model_dump(exclude_unset=True)
+    for key, value in update_dict.items():
+        setattr(membership, key, value)
+
+    db.add(membership)
+    await db.commit()
+    await db.refresh(membership)
+
+    return {"message": "Таска успешно обновлена", "title": title}
+
+
+@router.get("/projects/tasks")
+async def get_me(project_id: int,
+                 tasks: List[Task] = Depends(get_project_tasks)):
+    a = [
+        TaskRead(
+            id=task.id,
+            title=task.title,
+            priority=task.priority,
+            created_at=task.created_at,
+            updated_at=task.updated_at,
+            project_id=project_id,
+            status=task.status,
+            assignee_id=task.assignee_id,
+            tester_id=task.tester_id,
+        )
+        for task in tasks
+
+    ]
+
+    return a
+
+
+@router.put("/projects/{project_id}/members")
+async def update_members(
+        title: str,
+        project_id: int,
+        task: TaskUpdate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+        projects: List[Project] = Depends(get_user_projects),
+):
+    res = await db.execute(select(Task).filter_by(project_id=project_id, title=title))
+    membership = res.scalars().first()
+    print(membership)
+    if not membership:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+
+    update_dict = task.model_dump(exclude_unset=True)
+    for key, value in update_dict.items():
+        setattr(membership, key, value)
+
+    db.add(membership)
+    await db.commit()
+    await db.refresh(membership)
+
+    return {"message": "Таска успешно обновлена", "title": title}

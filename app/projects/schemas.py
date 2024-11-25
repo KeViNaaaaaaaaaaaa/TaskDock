@@ -21,6 +21,7 @@ class ProjectBase(BaseModel):
     description: Optional[str] = None
 
 
+
 class ProjectDelete(BaseModel):
     id: int
     title: str
@@ -54,7 +55,7 @@ class TaskBase(BaseModel):
     status: str
     priority: str
     tester_id: int
-    due_data: (datetime.now() + timedelta(10)).strftime("%d/%m/%y %I:%M")
+    # due_data: (datetime.now() + timedelta(10)).strftime("%d/%m/%y %I:%M")
 
     class Config:
         arbitrary_types_allowed = False

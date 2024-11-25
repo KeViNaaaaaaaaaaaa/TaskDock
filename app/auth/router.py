@@ -14,8 +14,6 @@ from app.dao.session_maker import TransactionSessionDep, SessionDep
 router = APIRouter(prefix='/auth', tags=['Auth'])
 
 
-class UserAlreadyExistsExceptionEmif:
-    pass
 
 
 @router.post("/register/")

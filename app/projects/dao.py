@@ -153,7 +153,14 @@ class ProjectsDAO:
         return r
 
     @staticmethod
-    async def get_project_tasks(session: AsyncSession, user_id: int) -> List[Project]:
+    async def get_project_tasks(session: AsyncSession, project_id: int) -> List[Project]:
+        result_members = await session.execute(select(Task).filter(Task.project_id == project_id))
+        projects_members = result_members.scalars().all()
+
+        return projects_members
+
+    @staticmethod
+    async def get_projects_tasks(session: AsyncSession, user_id: int) -> List[Project]:
         result = await session.execute(
             select(Project).join(ProjectMembership).filter(ProjectMembership.user_id == user_id)
         )
