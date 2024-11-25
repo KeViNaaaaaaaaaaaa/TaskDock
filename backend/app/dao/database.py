@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Dict, Any, Annotated
-from sqlalchemy import func, TIMESTAMP, Integer
+from sqlalchemy import func, TIMESTAMP, Integer, create_engine
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, declared_attr
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine, AsyncSession
 
@@ -9,6 +9,15 @@ from app.config import database_url
 engine = create_async_engine(url=database_url)
 async_session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 str_uniq = Annotated[str, mapped_column(unique=True, nullable=False)]
+
+sync_engine = create_engine(url=database_url.replace("sqlite+aiosqlite", "sqlite"))
+
+async def init_db():
+    """Инициализирует базу данных, создавая таблицы, если их нет."""
+    async with engine.begin() as conn:
+        # Опционально можно отключить миграции Alembic для отладки
+        await conn.run_sync(Base.metadata.create_all)
+
 
 
 class Base(AsyncAttrs, DeclarativeBase):
