@@ -1,8 +1,6 @@
 from datetime import datetime
-from sqlalchemy import String, Integer, ForeignKey, DateTime, Enum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.core.db import Base
-from app.models import User
+from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy import Enum as SQLAEnum
 from typing import Optional, List
 import enum
 
@@ -14,34 +12,39 @@ class ProjectRole(str, enum.Enum):
 
 
 # Модель для проекта
-class Project(Base):
+class Project(SQLModel, table=True):
     __tablename__ = 'projects'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    status: Mapped[str] = mapped_column(String, default="Active", server_default="Active")
+    id: int = Field(default=None, primary_key=True, index=True)
+    title: str = Field(nullable=False)
+    description: Optional[str] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    status: str = Field(
+        default="Active",
+        sa_column_kwargs={"server_default": "Active"}
+    )
 
-    tasks: Mapped[List["Task"]] = relationship("Task", back_populates="project")
-    members: Mapped[List["ProjectMembership"]] = relationship("ProjectMembership", back_populates="project")
+    # Отношения
+    tasks: List["Task"] = Relationship(back_populates="project")
+    members: List["ProjectMembership"] = Relationship(back_populates="project")
 
     def __repr__(self):
         return f"Project(id={self.id}, title={self.title})"
 
 
 # Модель для участия в проекте (пользователи в проектах)
-class ProjectMembership(Base):
+class ProjectMembership(SQLModel, table=True):
     __tablename__ = 'project_memberships'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    project_id: Mapped[int] = mapped_column(Integer, ForeignKey('projects.id'), nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
-    role: Mapped[ProjectRole] = mapped_column(Enum(ProjectRole), nullable=False)
+    id: int = Field(default=None, primary_key=True, index=True)
+    project_id: int = Field(nullable=False, foreign_key="projects.id")
+    user_id: int = Field(nullable=False, foreign_key="users.id")
+    role: ProjectRole = Field(sa_column=SQLAEnum(ProjectRole))
 
-    project: Mapped["Project"] = relationship("Project", back_populates="members")
-    user: Mapped["User"] = relationship("User", back_populates="memberships")
+    # Отношения
+    project: "Project" = Relationship(back_populates="members")
+    user: "User" = Relationship(back_populates="memberships")
 
     def __repr__(self):
         return f"ProjectMembership(id={self.id}, user_id={self.user_id}, role={self.role})"
@@ -63,23 +66,25 @@ class TaskPriority(str, enum.Enum):
 
 
 # Модель задачи
-class Task(Base):
+class Task(SQLModel, table=True):
     __tablename__ = 'tasks'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    project_id: Mapped[int] = mapped_column(Integer, ForeignKey('projects.id'), nullable=False)
-    assignee_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('project_memberships.user_id'), nullable=True)
-    status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.Grooming)
-    priority: Mapped[TaskPriority] = mapped_column(Enum(TaskPriority), default=TaskPriority.Medium)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    tester_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
+    id: int = Field(default=None, primary_key=True, index=True)
+    title: str = Field(nullable=False)
+    description: Optional[str] = Field(default=None)
+    project_id: int = Field(nullable=False, foreign_key="projects.id")
+    assignee_id: Optional[int] = Field(default=None, foreign_key="project_memberships.user_id")
+    status: TaskStatus = Field(sa_column=SQLAEnum(TaskStatus), default=TaskStatus.Grooming)
+    priority: TaskPriority = Field(sa_column=SQLAEnum(TaskPriority), default=TaskPriority.Medium)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    tester_id: Optional[int] = Field(default=None, foreign_key="users.id")
 
-    project: Mapped["Project"] = relationship("Project", back_populates="tasks")
-    assignee: Mapped["ProjectMembership"] = relationship("ProjectMembership", back_populates="tasks", foreign_keys=[assignee_id])
+    # Отношения
+    project: "Project" = Relationship(back_populates="tasks")
+    assignee: Optional["ProjectMembership"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Task.assignee_id]"}
+    )
 
     def __repr__(self):
         return f"Task(id={self.id}, title={self.title}, status={self.status})"
-
